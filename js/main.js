@@ -6,8 +6,8 @@ let app = new Vue({
         altText: "A pair of socks",
         image: "./assets/vmSocks-green-onWhite.jpg",
         link: "https://www.amazon.com/s/ref=nb_sb_noss?url=search-alias%3Daps&field-keywords=socks",
-        inStock: true,
-        inventory: 10,
+        inStock: false,
+        inventory: 0,
         onSale: "On Sale",
         details: ['80% cotton', '20% polyester', 'Gender-neutral'],
         variants: [
