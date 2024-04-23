@@ -92,7 +92,7 @@ textarea {
     text-decoration: line-through;
 }
 
-span {
+p span {
     color: red;
     font-weight: bold;
 }

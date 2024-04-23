@@ -1,3 +1,5 @@
+let eventBus = new Vue()
+
 Vue.component("product", {
     props: {
         premium: {
@@ -17,12 +19,11 @@ Vue.component("product", {
         <p v-if="inventory > 10">In stock</p>
         <p v-else-if="inventory <= 10 && inventory > 0">Almost sold out!</p>
         <p v-else :class="{ decor: !inStock }">Out of stock</p>
-        <p><span>{{ sale }}</span></p>
-        <product-details></product-details>
-        <p>Shipping: {{ shipping }}</p>
         <div class="color-box" v-for="(variant, index) in variants" :key="variant.variantId"
             :style="{ backgroundColor:variant.variantColor }" @mouseover="updateProduct(index)">
         </div>
+        <p><span>{{ sale }}</span></p>
+        <p>Sizes:</p>
         <ul>
             <li v-for="size in sizes">{{ size }}</li>
         </ul>
@@ -32,19 +33,7 @@ Vue.component("product", {
         <button v-on:click="delFromCart" :disabled="!inStock" :class="{ disabledButton: !inStock }">Delete to cart</button><br><br>
         <a :href="link">More products like this.</a>
     </div>
-    <div class="review">
-        <h2>Reviews</h2>
-        <p v-if="!reviews.length">There are no reviews yet.</p>
-        <ul>
-            <li v-for="review in reviews">
-                <p>{{ review.name }}</p>
-                <p>Rating: {{ review.rating }}</p>
-                <p>{{ review.review }}</p>
-                <p>Recommend: {{ review.recommend }}</p>
-            </li>
-        </ul>
-    </div>
-    <product-review @review-submitted="addReview"></product-review>
+    <product-tabs :reviews="reviews"></product-tabs> 
     </div>
   `,
     data() {
@@ -87,9 +76,6 @@ Vue.component("product", {
         },
         delFromCart() {
             this.$emit('del-from-cart');
-        },
-        addReview(productReview) {
-            this.reviews.push(productReview)
         }
     },
     computed: {
@@ -117,7 +103,13 @@ Vue.component("product", {
             }
         }
 
-    }
+    },
+    mounted() {
+        eventBus.$on('review-submitted', productReview => {
+            this.reviews.push(productReview)
+        })
+     }
+     
 
 })
 
@@ -198,7 +190,7 @@ Vue.component('product-review', {
                     rating: this.rating,
                     recommend: this.recommend
                 }
-                this.$emit('review-submitted', productReview)
+                eventBus.$emit('review-submitted', productReview)
                 this.name = null
                 this.review = null
                 this.rating = null
@@ -214,10 +206,75 @@ Vue.component('product-review', {
 
 })
 
+Vue.component('product-tabs', {
+    template: `
+    <div>   
+    <ul>
+      <span class="tab"
+            :class="{ activeTab: selectedTab === tab }"
+            v-for="(tab, index) in tabs"
+            @click="selectedTab = tab"
+      >{{ tab }}</span>
+    </ul>
+    <div v-show="selectedTab === 'Reviews'">
+      <p v-if="!reviews.length">There are no reviews yet.</p>
+      <ul>
+        <li v-for="review in reviews">
+        <p>{{ review.name }}</p>
+        <p>Rating: {{ review.rating }}</p>
+        <p>{{ review.review }}</p>
+        <p>Recommend: {{review.recommend}}</p>
+        </li>
+      </ul>
+    </div>
+    <div v-show="selectedTab === 'Make a Review'">
+        <product-review></product-review>
+    </div>
+    <div v-show="selectedTab === 'Shipping'">
+        <product-shipping></product-shipping>
+    </div>
+    <div v-show="selectedTab === 'Details'">
+        <product-details></product-details>
+    </div>
+  </div>
+
+`,
+    data() {
+        return {
+            tabs: ['Reviews', 'Make a Review', 'Shipping', 'Details'],
+            selectedTab: 'Reviews' 
+        }
+    },
+
+    props: {
+        reviews: {
+            type: Array,
+            required: false
+        }
+    },
+
+})
+
+Vue.component('product-shipping', {
+    template: `
+     <p>Shipping: {{ shipping }}</p>
+    `,
+    computed: {
+        shipping() {
+            if (this.premium) {
+                return "Free";
+            } else {
+                return 2.99
+            }
+        },
+    }
+})
+
+
 let app = new Vue({
     el: '#app',
     data: {
-        premium: true,
+        premium: false,
         cart: []
     },
     methods: {
