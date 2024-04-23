@@ -96,3 +96,21 @@ span {
     color: red;
     font-weight: bold;
 }
+
+.question{
+    display: flex;
+    gap: 20px;
+}
+
+.question input {
+    width: 5%;
+}
+
+.question label {
+    margin-top: 5px;
+}
+
+.review {
+    margin-right: 550px;
+    margin-left: 100px;
+}
