@@ -12,9 +12,6 @@ Vue.component("product", {
         </div>
 
         <div class="product-info">
-            <div class="cart">
-                <p>Cart({{ cart }})</p>
-            </div>
         <h1>{{ title }}</h1>
         <p>{{ description }}</p>
         <p v-if="inventory > 10">In stock</p>
@@ -32,7 +29,7 @@ Vue.component("product", {
         <button v-on:click="addToCart" :disabled="!inStock" :class="{ disabledButton: !inStock }">
             Add to cart
         </button>
-        <button v-on:click="delToCart" :disabled="cart == 0" :class="{ disabledButton: cart == 0 }">Delete to cart</button><br><br>
+        <button v-on:click="delFromCart" :disabled="!inStock" :class="{ disabledButton: !inStock }">Delete to cart</button><br><br>
         <a :href="link">More products like this.</a>
     </div>
     </div>
@@ -63,20 +60,20 @@ Vue.component("product", {
                 }
             ],
             sizes: ['S', 'M', 'L', 'XL', 'XXL', 'XXXL'],
-            cart: 0
+
         }
     },
 
     methods: {
         addToCart() {
-            this.cart += 1
+            this.$emit('add-to-cart', this.variants[this.selectedVariant].variantId);
         },
         updateProduct(index) {
             this.selectedVariant = index;
             console.log(index);
         },
-        delToCart() {
-            this.cart -= 1
+        delFromCart() {
+            this.$emit('del-from-cart');
         },
     },
     computed: {
@@ -126,6 +123,15 @@ Vue.component("product-details", {
 let app = new Vue({
     el: '#app',
     data: {
-        premium: true
-    }
+        premium: true,
+        cart: []
+    },
+    methods: {
+        updateCart(id) {
+            this.cart.push(id);
+        },
+        updateDelCart(id) {
+            this.cart.pop(id);
+        }     
+     }     
 })
