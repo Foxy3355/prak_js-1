@@ -1,16 +1,10 @@
 let eventBus = new Vue()
 
 Vue.component("product", {
-    props: {
-        premium: {
-            type: Boolean,
-            required: true
-        }
-    },
     template: `
     <div class="product">
         <div class="product-image">
-        <img :alt="altText" :src="image" />
+        <img :alt="altText" :src="image" draggable="true" @dragstart="dragStart" />
         </div>
 
         <div class="product-info">
@@ -27,7 +21,7 @@ Vue.component("product", {
         <ul>
             <li v-for="size in sizes">{{ size }}</li>
         </ul>
-        <button v-on:click="addToCart" :disabled="!inStock" :class="{ disabledButton: !inStock }">
+        <button @click="addToCart" :disabled="!inStock" :class="{ disabledButton: !inStock }">
             Add to cart
         </button>
         <button v-on:click="delFromCart" :disabled="!inStock" :class="{ disabledButton: !inStock }">Delete to cart</button><br><br>
@@ -69,7 +63,22 @@ Vue.component("product", {
     methods: {
         addToCart() {
             this.$emit('add-to-cart', this.variants[this.selectedVariant].variantId);
+            this.cloneCart();
         },
+
+        cloneCart() {
+            let img = this.$el.querySelector('img');
+            let rect = img.getBoundingClientRect();
+            let x = window.innerWidth - rect.width + 200;
+            let y = -340;
+            img.style.transform = `translate(${x}px, ${y}px) scale(0.1)`;
+            img.style.transition = 'transform 0.9s ease-in-out';
+            setTimeout(() => {
+                img.style.transform = '';
+                img.style.transition = '';
+            }, 1000);
+        },
+
         updateProduct(index) {
             this.selectedVariant = index;
             console.log(index);
@@ -77,6 +86,7 @@ Vue.component("product", {
         delFromCart() {
             this.$emit('del-from-cart');
         }
+
     },
     computed: {
         title() {
@@ -94,22 +104,12 @@ Vue.component("product", {
             } else {
                 return '';
             }
-        },
-        shipping() {
-            if (this.premium) {
-                return "Free";
-            } else {
-                return 2.99
-            }
         }
 
     },
     mounted() {
-        eventBus.$on('review-submitted', productReview => {
-            this.reviews.push(productReview)
-        })
-     }
-     
+    }
+
 
 })
 
@@ -242,7 +242,7 @@ Vue.component('product-tabs', {
     data() {
         return {
             tabs: ['Reviews', 'Make a Review', 'Shipping', 'Details'],
-            selectedTab: 'Reviews' 
+            selectedTab: 'Reviews'
         }
     },
 
@@ -256,6 +256,12 @@ Vue.component('product-tabs', {
 })
 
 Vue.component('product-shipping', {
+    props: {
+        premium: {
+            type: Boolean,
+            required: true
+        }
+    },
     template: `
      <p>Shipping: {{ shipping }}</p>
     `,
@@ -271,10 +277,12 @@ Vue.component('product-shipping', {
 })
 
 
+
+
 let app = new Vue({
     el: '#app',
     data: {
-        premium: false,
+        premium: true,
         cart: []
     },
     methods: {
